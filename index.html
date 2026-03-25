@@ -4,14 +4,484 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Учет тренировок и параметров тела</title>
-  <link rel="stylesheet" href="./src/css/styles.css">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --card-2: #1f2937;
+      --line: #334155;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #22c55e;
+      --accent-2: #16a34a;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .title-block h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 42px);
+    }
+
+    .title-block p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .card {
+      background: rgba(17, 24, 39, 0.96);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar,
+    .person-panel,
+    .section {
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 2fr 1fr auto auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      background: #0b1220;
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #052e16;
+      font-weight: 700;
+    }
+
+    .tab small {
+      display: block;
+      color: inherit;
+      opacity: 0.8;
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4,
+    .grid-5 {
+      display: grid;
+      gap: 12px;
+    }
+
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-4 { grid-template-columns: repeat(4, 1fr); }
+    .grid-5 { grid-template-columns: repeat(5, 1fr); }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #0b1220;
+      color: var(--text);
+      outline: none;
+      font-size: 14px;
+    }
+
+    textarea { min-height: 90px; resize: vertical; }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #052e16;
+    }
+
+    .btn.primary:hover { background: var(--accent-2); color: white; }
+    .btn.secondary { background: #1e293b; color: var(--text); border: 1px solid var(--line); }
+    .btn.danger { background: rgba(239, 68, 68, 0.12); color: #fecaca; border: 1px solid rgba(239, 68, 68, 0.35); }
+    .btn.warning { background: rgba(245, 158, 11, 0.12); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.35); }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat-box {
+      background: #0b1220;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .stat-box span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .stat-box strong {
+      font-size: 24px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 950px;
+      background: #0b1220;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: #111827;
+      color: #cbd5e1;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .set-chip {
+      display: inline-block;
+      margin: 4px 6px 0 0;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #1f2937;
+      border: 1px solid var(--line);
+      font-size: 12px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .empty {
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      background: rgba(11, 18, 32, 0.7);
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .mobile-cards {
+      display: none;
+      gap: 12px;
+    }
+
+    .mobile-record {
+      background: #0b1220;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .mobile-record-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .mobile-record-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .mobile-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+      padding-bottom: 6px;
+    }
+
+    .mobile-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .mobile-key {
+      color: var(--muted);
+      font-size: 12px;
+      min-width: 110px;
+    }
+
+    .mobile-value {
+      text-align: right;
+      font-size: 14px;
+      word-break: break-word;
+    }
+
+    @media (max-width: 1100px) {
+      .container { max-width: 520px; padding: 12px; }
+      .header { align-items: flex-start; }
+      .toolbar,
+      .grid-2,
+      .grid-3,
+      .grid-4,
+      .grid-5,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+      .section,
+      .toolbar,
+      .person-panel {
+        padding: 14px;
+        margin-bottom: 14px;
+      }
+      .section-head {
+        align-items: flex-start;
+      }
+      .section-head h2 {
+        font-size: 20px;
+      }
+      .title-block h1 {
+        font-size: 26px;
+        line-height: 1.15;
+      }
+      .title-block p,
+      .muted,
+      th,
+      td,
+      input,
+      select,
+      textarea {
+        font-size: 14px;
+      }
+      .btn {
+        width: 100%;
+        min-height: 46px;
+      }
+      .actions {
+        width: 100%;
+        flex-direction: column;
+      }
+      .actions .btn {
+        width: 100%;
+      }
+      .tabs {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+      .tab {
+        width: 100%;
+        text-align: left;
+        border-radius: 14px;
+      }
+      .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      table {
+        min-width: 780px;
+      }
+      th, td {
+        padding: 10px;
+      }
+      .stat-box {
+        padding: 12px;
+      }
+      .stat-box strong {
+        font-size: 22px;
+      }
+      .footer-note {
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        background: #0f172a;
+      }
+      .container {
+        padding: 10px;
+      }
+      .card {
+        border-radius: 14px;
+      }
+      .section,
+      .toolbar,
+      .person-panel {
+        padding: 12px;
+      }
+      .title-block h1 {
+        font-size: 24px;
+      }
+      .title-block p {
+        font-size: 13px;
+      }
+      label {
+        font-size: 12px;
+      }
+      input,
+      select,
+      textarea {
+        padding: 11px 12px;
+        border-radius: 10px;
+      }
+      .btn {
+        padding: 11px 14px;
+        border-radius: 10px;
+        font-size: 14px;
+      }
+      .section-head h2 {
+        font-size: 18px;
+      }
+      .stat-box span {
+        font-size: 12px;
+      }
+      .stat-box strong {
+        font-size: 20px;
+      }
+      .table-wrap {
+        display: none;
+      }
+      .mobile-cards {
+        display: grid;
+      }
+      .set-chip {
+        font-size: 11px;
+        padding: 5px 8px;
+      }
+      .mobile-row {
+        flex-direction: column;
+        gap: 4px;
+      }
+      .mobile-value {
+        text-align: left;
+      }
+    }
+      .toolbar,
+      .grid-2,
+      .grid-3,
+      .grid-4,
+      .grid-5,
+      .stats { grid-template-columns: 1fr; }
+      .section-head { align-items: flex-start; }
+      .btn { width: 100%; }
+      .actions .btn { width: auto; }
+      .title-block h1 { font-size: 28px; }
+    
+
+  </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
       <div class="title-block">
         <h1>Учет тренировок и параметров тела</h1>
-        <p>Сайт для нескольких людей: упражнения, подходы, повторения, вес и замеры тела. Все данные сохраняются в браузере.</p>
+        <p>Сайт для нескольких людей: упражнения, подходы, повторения, вес и замеры тела. Данные можно хранить в Firebase Firestore и открывать с разных устройств.</p>
       </div>
     </div>
 
@@ -25,7 +495,7 @@
         <input id="personGoal" type="text" placeholder="Например: набор массы" />
       </div>
       <button class="btn primary" id="addPersonBtn">Добавить человека</button>
-
+      <button class="btn secondary" id="seedBtn">Заполнить примером</button>
     </div>
 
     <div class="person-panel card">
@@ -35,8 +505,8 @@
           <div class="muted">По логике как в вашем Excel: у каждого человека свой набор тренировок и свои записи.</div>
         </div>
         <div class="actions">
-          <button disabled class="btn warning" id="exportBtn">Экспорт JSON</button>
-          <button disabled class="btn danger" id="clearAllBtn">Очистить всё</button>
+          <button class="btn warning" id="exportBtn">Экспорт JSON</button>
+          <button class="btn danger" id="clearAllBtn">Очистить всё</button>
         </div>
       </div>
       <div id="personTabs" class="tabs"></div>
@@ -45,36 +515,190 @@
     <div id="app"></div>
   </div>
 
-  <script>
-    const STORAGE_KEY = 'fitness_multiuser_tracker_v1';
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js';
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      onSnapshot,
+      serverTimestamp
+    } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
+
+    const STORAGE_KEY = 'fitness_multiuser_tracker_backup_v1';
+
+    // 1) Создайте проект Firebase
+    // 2) Включите Cloud Firestore
+    // 3) Зарегистрируйте Web App
+    // 4) Вставьте сюда свой firebaseConfig из консоли Firebase
+    const firebaseConfig = {
+  apiKey: "AIzaSyDo1ppwWc5N2-sSwwGhJYAWssh2iga2n-c",
+  authDomain: "oleg-d9f84.firebaseapp.com",
+  projectId: "oleg-d9f84",
+  storageBucket: "oleg-d9f84.firebasestorage.app",
+  messagingSenderId: "872891430972",
+  appId: "1:872891430972:web:ccbbed28296eb1713e6b39",
+  measurementId: "G-LY1SFHS0R0"
+};
+
+    // Можно поменять путь документа, если захотите отдельную базу для другого зала/группы
+    const FIRESTORE_COLLECTION = 'fitnessTracker';
+    const FIRESTORE_DOCUMENT = 'main';
 
     const defaultData = {
       people: [],
       activePersonId: null
     };
 
-    let state = loadState();
+    let state = loadBackupState();
+    let app = null;
+    let db = null;
+    let stateDocRef = null;
+    let firebaseReady = false;
+    let isWriting = false;
+
+    initFirebase();
+    render();
 
     function uid() {
       return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
     }
 
-    function loadState() {
+    function structuredDefault() {
+      return JSON.parse(JSON.stringify(defaultData));
+    }
+
+    function loadBackupState() {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return structuredClone(defaultData);
+      if (!raw) return structuredDefault();
       try {
         const parsed = JSON.parse(raw);
-        return {
-          people: Array.isArray(parsed.people) ? parsed.people : [],
-          activePersonId: parsed.activePersonId || parsed.people?.[0]?.id || null
-        };
+        return normalizeState(parsed);
       } catch {
-        return structuredClone(defaultData);
+        return structuredDefault();
       }
     }
 
-    function saveState() {
+    function saveBackupState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function normalizeState(input) {
+      const normalized = {
+        people: Array.isArray(input?.people) ? input.people : [],
+        activePersonId: input?.activePersonId || null
+      };
+
+      if (!normalized.activePersonId && normalized.people.length) {
+        normalized.activePersonId = normalized.people[0].id;
+      }
+
+      normalized.people = normalized.people.map(person => ({
+        id: person.id || uid(),
+        name: person.name || 'Без имени',
+        goal: person.goal || '',
+        createdAt: person.createdAt || new Date().toISOString(),
+        workouts: Array.isArray(person.workouts) ? person.workouts : [],
+        measurements: Array.isArray(person.measurements) ? person.measurements : []
+      }));
+
+      return normalized;
+    }
+
+    function hasFirebaseConfig() {
+      return Boolean(
+        firebaseConfig.apiKey &&
+        firebaseConfig.apiKey !== 'PASTE_YOUR_API_KEY' &&
+        firebaseConfig.projectId &&
+        firebaseConfig.projectId !== 'PASTE_YOUR_PROJECT_ID' &&
+        firebaseConfig.appId &&
+        firebaseConfig.appId !== 'PASTE_YOUR_APP_ID'
+      );
+    }
+
+    async function initFirebase() {
+      if (!hasFirebaseConfig()) {
+        showConfigMessage();
+        return;
+      }
+
+      try {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        stateDocRef = doc(db, FIRESTORE_COLLECTION, FIRESTORE_DOCUMENT);
+        firebaseReady = true;
+
+        const snapshot = await getDoc(stateDocRef);
+        if (snapshot.exists()) {
+          state = normalizeState(snapshot.data());
+          saveBackupState();
+          render();
+        } else {
+          await writeStateToFirestore();
+        }
+
+        onSnapshot(stateDocRef, (docSnap) => {
+          if (!docSnap.exists()) return;
+          if (isWriting) return;
+          state = normalizeState(docSnap.data());
+          saveBackupState();
+          render();
+        });
+      } catch (error) {
+        console.error('Firebase initialization error:', error);
+        alert('Не удалось подключиться к Firebase. Пока используется локальная резервная копия в браузере. Проверьте настройки firebaseConfig и Firestore Rules.');
+        render();
+      }
+    }
+
+    async function writeStateToFirestore() {
+      saveBackupState();
+
+      if (!firebaseReady || !stateDocRef) return;
+
+      try {
+        isWriting = true;
+        await setDoc(stateDocRef, {
+          ...state,
+          updatedAt: serverTimestamp()
+        });
+      } catch (error) {
+        console.error('Firestore save error:', error);
+        alert('Ошибка сохранения в Firebase. Изменения остались только в резервной копии браузера.');
+      } finally {
+        setTimeout(() => {
+          isWriting = false;
+        }, 150);
+      }
+    }
+
+    function persistState() {
+      writeStateToFirestore();
+      render();
+    }
+
+    function showConfigMessage() {
+      const appRoot = document.getElementById('app');
+      appRoot.innerHTML = `
+        <div class="section card">
+          <div class="section-head">
+            <div>
+              <h2>Нужно подключить Firebase</h2>
+              <div class="muted">Сайт уже готов к базе данных, осталось вставить ваш firebaseConfig.</div>
+            </div>
+          </div>
+          <div class="empty" style="text-align:left; line-height:1.7;">
+            <strong>Что сделать:</strong><br>
+            1. Откройте Firebase Console.<br>
+            2. Создайте проект.<br>
+            3. Включите Cloud Firestore.<br>
+            4. Добавьте Web App.<br>
+            5. Скопируйте объект <code>firebaseConfig</code> в этот HTML-файл.<br><br>
+            После этого все люди, тренировки и замеры будут храниться в базе Firestore, а не только в браузере.
+          </div>
+        </div>
+      `;
     }
 
     function getActivePerson() {
@@ -83,8 +707,7 @@
 
     function setActivePerson(id) {
       state.activePersonId = id;
-      saveState();
-      render();
+      persistState();
     }
 
     function addPerson(name, goal) {
@@ -98,8 +721,7 @@
       };
       state.people.push(person);
       state.activePersonId = person.id;
-      saveState();
-      render();
+      persistState();
     }
 
     function deletePerson(id) {
@@ -108,40 +730,35 @@
       if (!confirm(`Удалить ${person.name} со всеми тренировками и замерами?`)) return;
       state.people = state.people.filter(p => p.id !== id);
       state.activePersonId = state.people[0]?.id || null;
-      saveState();
-      render();
+      persistState();
     }
 
     function addWorkout(personId, workout) {
       const person = state.people.find(p => p.id === personId);
       if (!person) return;
       person.workouts.unshift({ id: uid(), ...workout });
-      saveState();
-      render();
+      persistState();
     }
 
     function deleteWorkout(personId, workoutId) {
       const person = state.people.find(p => p.id === personId);
       if (!person) return;
       person.workouts = person.workouts.filter(w => w.id !== workoutId);
-      saveState();
-      render();
+      persistState();
     }
 
     function addMeasurement(personId, measurement) {
       const person = state.people.find(p => p.id === personId);
       if (!person) return;
       person.measurements.unshift({ id: uid(), ...measurement });
-      saveState();
-      render();
+      persistState();
     }
 
     function deleteMeasurement(personId, measurementId) {
       const person = state.people.find(p => p.id === personId);
       if (!person) return;
       person.measurements = person.measurements.filter(m => m.id !== measurementId);
-      saveState();
-      render();
+      persistState();
     }
 
     function getStats(person) {
@@ -150,8 +767,7 @@
       const latestWeight = measurements[0]?.weight || '—';
       const exerciseCount = workouts.length;
       const totalSets = workouts.reduce((sum, w) => sum + (Number(w.setCount) || 0), 0);
-      const lastWorkoutDate = workouts[0]?.date || '—';
-      return { latestWeight, exerciseCount, totalSets, lastWorkoutDate };
+      return { latestWeight, exerciseCount, totalSets };
     }
 
     function renderTabs() {
@@ -175,17 +791,21 @@
 
     function render() {
       renderTabs();
-      const app = document.getElementById('app');
+      const appRoot = document.getElementById('app');
       const person = getActivePerson();
 
       if (!person) {
-        app.innerHTML = '';
+        appRoot.innerHTML = `
+          <div class="section card">
+            <div class="empty">Добавьте человека, чтобы начать учет тренировок и замеров.</div>
+          </div>
+        `;
         return;
       }
 
       const stats = getStats(person);
 
-      app.innerHTML = `
+      appRoot.innerHTML = `
         <div class="stats">
           <div class="stat-box card"><span>Человек</span><strong>${escapeHtml(person.name)}</strong></div>
           <div class="stat-box card"><span>Последний вес</span><strong>${escapeHtml(String(stats.latestWeight))} ${stats.latestWeight !== '—' ? 'кг' : ''}</strong></div>
@@ -197,7 +817,7 @@
           <div class="section-head">
             <div>
               <h2>Добавить упражнение / тренировку</h2>
-              <div class="muted">Можно записывать по одному упражнению за раз: название, вес, подходы и повторения в каждом подходе.</div>
+              <div class="muted">Данные сохраняются в Firebase Firestore и резервно дублируются в браузере.</div>
             </div>
             <button class="btn danger" id="deletePersonBtn">Удалить человека</button>
           </div>
@@ -300,7 +920,7 @@
           <div class="section-head">
             <div>
               <h2>Таблица упражнений</h2>
-              <div class="muted">Формат близкий к вашему примеру: одна запись = одно упражнение с весом и повторениями по подходам.</div>
+              <div class="muted">Одна запись = одно упражнение с весом и повторениями по подходам.</div>
             </div>
           </div>
           ${renderWorkoutTable(person)}
@@ -314,7 +934,7 @@
             </div>
           </div>
           ${renderMeasurementTable(person)}
-          <div class="footer-note">Данные сохраняются только в этом браузере через localStorage. Чтобы перенести на другой компьютер или хостинг, используйте экспорт JSON или позже можно подключить базу данных.</div>
+          <div class="footer-note">Сейчас основной источник хранения — Cloud Firestore. Локальная копия в браузере остается только как резервная подстраховка.</div>
         </div>
       `;
 
@@ -355,6 +975,23 @@
             </tbody>
           </table>
         </div>
+
+        <div class="mobile-cards">
+          ${person.workouts.map(w => `
+            <div class="mobile-record">
+              <div class="mobile-record-title">${escapeHtml(w.title)}</div>
+              <div class="mobile-record-grid">
+                <div class="mobile-row"><div class="mobile-key">Дата</div><div class="mobile-value">${escapeHtml(w.date || '—')}</div></div>
+                <div class="mobile-row"><div class="mobile-key">Тип</div><div class="mobile-value">${escapeHtml(w.type || '—')}</div></div>
+                <div class="mobile-row"><div class="mobile-key">Вес</div><div class="mobile-value">${escapeHtml(String(w.machineWeight || '—'))} ${w.machineWeight ? 'кг' : ''}</div></div>
+                <div class="mobile-row"><div class="mobile-key">Подходы</div><div class="mobile-value">${escapeHtml(String(w.setCount || '—'))}</div></div>
+                <div class="mobile-row"><div class="mobile-key">Повторения</div><div class="mobile-value">${formatReps(w.reps)}</div></div>
+                <div class="mobile-row"><div class="mobile-key">Заметка</div><div class="mobile-value">${escapeHtml(w.note || '—')}</div></div>
+              </div>
+              <button class="btn danger delete-workout-btn" data-id="${w.id}">Удалить</button>
+            </div>
+          `).join('')}
+        </div>
       `;
     }
 
@@ -394,6 +1031,25 @@
               `).join('')}
             </tbody>
           </table>
+        </div>
+
+        <div class="mobile-cards">
+          ${person.measurements.map(m => `
+            <div class="mobile-record">
+              <div class="mobile-record-title">Замер от ${escapeHtml(m.date || '—')}</div>
+              <div class="mobile-record-grid">
+                <div class="mobile-row"><div class="mobile-key">Вес</div><div class="mobile-value">${escapeHtml(String(m.weight || '—'))}</div></div>
+                <div class="mobile-row"><div class="mobile-key">Грудь</div><div class="mobile-value">${escapeHtml(String(m.chest || '—'))}</div></div>
+                <div class="mobile-row"><div class="mobile-key">Талия</div><div class="mobile-value">${escapeHtml(String(m.waist || '—'))}</div></div>
+                <div class="mobile-row"><div class="mobile-key">Бедра</div><div class="mobile-value">${escapeHtml(String(m.hips || '—'))}</div></div>
+                <div class="mobile-row"><div class="mobile-key">Бицепс</div><div class="mobile-value">${escapeHtml(String(m.biceps || '—'))}</div></div>
+                <div class="mobile-row"><div class="mobile-key">Бедро</div><div class="mobile-value">${escapeHtml(String(m.thigh || '—'))}</div></div>
+                <div class="mobile-row"><div class="mobile-key">Шея</div><div class="mobile-value">${escapeHtml(String(m.neck || '—'))}</div></div>
+                <div class="mobile-row"><div class="mobile-key">Комментарий</div><div class="mobile-value">${escapeHtml(m.note || '—')}</div></div>
+              </div>
+              <button class="btn danger delete-measurement-btn" data-id="${m.id}">Удалить</button>
+            </div>
+          `).join('')}
         </div>
       `;
     }
@@ -479,10 +1135,10 @@
       document.getElementById('personGoal').value = '';
     });
 
-    document.getElementById('clearAllBtn').addEventListener('click', () => {
+    document.getElementById('clearAllBtn').addEventListener('click', async () => {
       if (!confirm('Точно очистить все данные?')) return;
-      state = structuredClone(defaultData);
-      saveState();
+      state = structuredDefault();
+      await writeStateToFirestore();
       render();
     });
 
@@ -495,7 +1151,7 @@
       URL.revokeObjectURL(a.href);
     });
 
-    document.getElementById('seedBtn').addEventListener('click', () => {
+    document.getElementById('seedBtn').addEventListener('click', async () => {
       state = {
         activePersonId: 'p1',
         people: [
@@ -505,7 +1161,7 @@
             goal: 'набор массы',
             createdAt: new Date().toISOString(),
             workouts: [
-              { id: uid(), date: '2026-03-25', type: 'Грудь / спина', title: 'Жим лёжа', machineWeight: '80', setCount: '4', reps: '20,8,8,5', note: 'по таблице из Excel' },
+              { id: uid(), date: '2026-03-25', type: 'Грудь / спина', title: 'Жим лёжа', machineWeight: '80', setCount: '4', reps: '20,8,8,5', note: 'пример записи' },
               { id: uid(), date: '2026-03-25', type: 'Спина', title: 'Тяга вертикального блока', machineWeight: '59', setCount: '4', reps: '8,10,8,9', note: '' }
             ],
             measurements: [
@@ -524,11 +1180,9 @@
           }
         ]
       };
-      saveState();
+      await writeStateToFirestore();
       render();
     });
-
-    render();
   </script>
 </body>
 </html>
